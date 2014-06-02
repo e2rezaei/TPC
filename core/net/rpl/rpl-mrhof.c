@@ -96,16 +96,17 @@ typedef uint16_t rpl_path_metric_t;
 static rpl_path_metric_t
 calculate_path_metric(rpl_parent_t *p)
 {
+	rpl_dag_t *dag=p->dag;//Es
   if(p == NULL) {
-    return MAX_PATH_COST * RPL_DAG_MC_ETX_DIVISOR;
+    return MAX_PATH_COST * RPL_DAG_MC_ETX_DIVISOR * dag->Tx; //Es
   }
 
 #if RPL_DAG_MC == RPL_DAG_MC_NONE
-  return p->rank + (uint16_t)p->link_metric;
+  return p->rank + (dag->Tx * (uint16_t)p->link_metric);//Es
 #elif RPL_DAG_MC == RPL_DAG_MC_ETX
-  return p->mc.obj.etx + (uint16_t)p->link_metric;
+  return p->mc.obj.etx + (dag->Tx*(uint16_t)p->link_metric);//Es
 #elif RPL_DAG_MC == RPL_DAG_MC_ENERGY
-  return p->mc.obj.energy.energy_est + (uint16_t)p->link_metric;
+  return p->mc.obj.energy.energy_est + (dag->Tx*(uint16_t)p->link_metric);//Es
 #else
 #error "Unsupported RPL_DAG_MC configured. See rpl.h."
 #endif /* RPL_DAG_MC */
@@ -239,14 +240,15 @@ calculate_rank(rpl_parent_t *p, rpl_rank_t base_rank)
 {
   rpl_rank_t new_rank;
   rpl_rank_t rank_increase;
+  rpl_dag_t *dag=p->dag;//Es
 
   if(p == NULL) {
     if(base_rank == 0) {
       return INFINITE_RANK;
     }
-    rank_increase = RPL_INIT_LINK_METRIC * RPL_DAG_MC_ETX_DIVISOR;
+    rank_increase = RPL_INIT_LINK_METRIC * RPL_DAG_MC_ETX_DIVISOR* (dag->Tx);//Es
   } else {
-    rank_increase = p->link_metric;
+    rank_increase = (p->link_metric)* (dag->Tx);//Es
     if(base_rank == 0) {
       base_rank = p->rank;
     }
