@@ -188,12 +188,12 @@ powertrace_start(CLOCK_SECOND * 2); //elnaz
 startup_time=(random_rand()*CLOCK_SECOND)*60/RANDOM_RAND_MAX;
   etimer_set(&startup, CLOCK_SECOND*startup_time);
 
-  PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
+  PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&startup));
 
   x= find_pref();
 
   etimer_set(&TPC, CLOCK_SECOND*9*60);
-  PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
+  PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&TPC));
 
 
 

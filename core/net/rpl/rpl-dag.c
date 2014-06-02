@@ -92,7 +92,7 @@ static int index;
 
 static int Tx_array[8]={3,7,11,15,19,23,27,31};
 static int Es_array[8]={330,330,330,330,330,330,330,330};
-static int tx;
+//static int tx;
 static int tx_indx=4;
 void set_output_power_field(int);
 static 	char pt_exist=0;
@@ -1333,7 +1333,7 @@ if (p!=NULL)
 char find_pref(void)
 {
 	int timer;
-print("find_pref\n");
+printf("find_pref\n");
 	if (tx_indx == 4)
 	{
 		pt_exist = rpl_pt_parents();
