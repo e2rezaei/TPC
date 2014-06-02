@@ -91,6 +91,10 @@ static int index;
 
 static int Tx_array[8]={3,7,11,15,19,23,27,31};
 static int Es_array[8]={330,330,330,330,330,330,330,330};
+static int tx;
+static int tx_indx=4;
+static void set_output_power_field(void);
+static 	char pt_exist=0;
 //static char flag=0;
 //elnaz
 /*---------------------------------------------------------------------------*/
@@ -1330,21 +1334,25 @@ char find_pref(void)
 	 static struct etimer test_one_tx;
 
 	int timer;
-	char pt_exist;
-	pt_exist = rpl_pt_parents();
-//	int i = 4;
-//	int wait = PROBE_NUM_THRESHOLD * (PROBE_INTERVAL+1);
-//	 etimer_set(&test_one_tx, wait*CLOCK_SECOND);
-	if(pt_exist==1)
+
+	if (tx_index == 4)
 	{
-
-//		cc2420_set_txpower(Tx_array[i]);
-
-//		printf("Tx=%d\n", cc2420_get_txpower());
-
-		timer = (PROBE_INTERVAL * CLOCK_SECOND);
-		ctimer_set(&probe_timer, timer, &handle_probe_timer, pt_parents);
+		pt_exist = rpl_pt_parents();
 	}
+	//	int i = 4;
+	//	int wait = PROBE_NUM_THRESHOLD * (PROBE_INTERVAL+1);
+	//	 etimer_set(&test_one_tx, wait*CLOCK_SECOND);
+		if(pt_exist==1)
+		{
+
+			set_output_power_field(Tx_array[tx_index]);
+
+			timer = (PROBE_INTERVAL * CLOCK_SECOND);
+			ctimer_set(&probe_timer, timer, &handle_probe_timer, pt_parents);
+		}
+
+
+
 	return pt_exist;
 }
 
@@ -1463,24 +1471,73 @@ static void handle_probe_timer(void *pt)
 }
 /*--------------------------------------------------------------------------------*/
 void handle_find_pref_timer(void * ptr)
-{	int i ;
-	uip_ipaddr_t *dest;
-	rpl_parent_t *p;
+{
+
 	rpl_dag_t *dag=(&instance_table[0])->current_dag;
-	for(i=0; i<3 ; i++)
+	rpl_parent_t *pref = dag->preferred_parent  ;
+	int etx = (pref->numtx)/(pref->recv);
+
+	Es[tx_index] = calculate_path_metric(pref);
+if(tx_index==4)
+{
+	pt_parents[1].rank=INFINITE_RANK;
+	pt_parents[1].ipaddr=NULL;
+	pt_parents[2]=pt_parents[1];
+	pt_parents[0].ipaddr = pl_get_parent_ipaddr(pref);
+	pref->numtx=0;
+	pref->recv=0;
+	if (etx==2)
 	{
-		if(pt_parents[i].rank !=INFINITE_RANK )
-		{
-			dest=pt_parents[i].ipaddr;
-//			if(dest==NULL){printf("null dest\n");}
-
-			p=rpl_find_parent(dag, dest);
-			printf("new ETX=%d, numtx=%d , recv=%d\n", p->link_metric , p->numtx, p->recv);
-
-		}
-
+		set_output_power_field(Tx_array[tx_index]);
 
 	}
+	else
+	{
+		if(etx==1)
+		{tx_index--;}
+		else
+		{tx_index++;}
+	}
+
+}
+else{
+
+	if (etx==2)
+	{
+
+		set_output_power_field(Tx_array[tx_index]);
+	}
+	else
+	{
+		if(etx==1)
+		{tx_index--;
+
+		}
+		else
+		{tx_index++;}
+
+		set_output_power_field(Tx_array[tx_index]);
+	}
+
+}
+
+//	int i ;
+//	uip_ipaddr_t *dest;
+//	rpl_parent_t *p;
+//	rpl_dag_t *dag=(&instance_table[0])->current_dag;
+//	for(i=0; i<3 ; i++)
+//	{
+//		if(pt_parents[i].rank !=INFINITE_RANK )
+//		{
+//			dest=pt_parents[i].ipaddr;
+//
+//			p=rpl_find_parent(dag, dest);
+//			printf("new ETX=%d, numtx=%d , recv=%d\n", p->link_metric , p->numtx, p->recv);
+//
+//		}
+//
+//
+//	}
 }
 
 
@@ -1514,7 +1571,7 @@ else
 		{	probe_number=0;
 			adjust_ETX_th();
 			printf("\nprobe_total=%d\n",probe_total);
-			ctimer_set(&find_pref_timer, 5*CLOCK_SECOND, &handle_find_pref_timer, NULL);
+			ctimer_set(&find_pref_timer, 10*CLOCK_SECOND, &handle_find_pref_timer, NULL);
 
 		}
 	}
@@ -1548,5 +1605,46 @@ temp2 = ((p->rank%256)*100)/256;
 	printf("}\n");
 
 }
+/*--------------------------------------------------------------------------------*/
+static void set_output_power_field(int pow)
+{
 
+rpl_dag_t *dag=(&instance_table[0])->current_dag;
+
+ tx =cc2420_set_txpower(pow);
+printf(" Tx=%d \n",pow);
+
+switch(tx) {
+
+case 3:
+	dag->Tx = 1; //0.003;//25.5 * coeff;
+	break;
+case 7:
+	dag->Tx = 1; //0.03;//29.7 * coeff;
+	break;
+case 11:
+	dag->Tx = 3; // 0.1;//33.6 * coeff;
+	break;
+
+case 15:
+	dag->Tx = 7; //0.2;//37.5* coeff;
+	break;
+
+case 19:
+	dag->Tx = 10;//0.3; //41.7* coeff;
+	break;
+
+case 23:
+	dag->Tx = 16; //0.5; //45.6* coeff;
+	break;
+
+case 27:
+	dag->Tx = 26;// 0.8; //49.5* coeff;
+	break;
+
+case 31:
+	dag->Tx = 33;//1; //52.2* coeff;
+
+}
+}
 #endif /* UIP_CONF_IPV6 */
