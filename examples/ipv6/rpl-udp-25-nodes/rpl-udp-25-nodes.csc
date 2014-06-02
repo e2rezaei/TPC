@@ -417,7 +417,7 @@
   <plugin>
     se.sics.cooja.plugins.SimControl
     <width>280</width>
-    <z>0</z>
+    <z>1</z>
     <height>160</height>
     <location_x>400</location_x>
     <location_y>0</location_y>
@@ -442,12 +442,12 @@
   <plugin>
     se.sics.cooja.plugins.LogListener
     <plugin_config>
-      <filter>ID:1</filter>
+      <filter>PROBES</filter>
       <formatted_time />
       <coloring />
     </plugin_config>
     <width>1255</width>
-    <z>1</z>
+    <z>2</z>
     <height>240</height>
     <location_x>400</location_x>
     <location_y>160</location_y>
@@ -524,7 +524,7 @@ var N = 5; &#xD;
     log.testOK();&#xD;
     &#xD;
   }&#xD;
-	if(msg.equals("move")) &#xD;
+	/*if(msg.equals("move")) &#xD;
 	 {&#xD;
             var count = 1;&#xD;
 			 for(var i = 0; i &lt; N; i++)&#xD;
@@ -546,16 +546,16 @@ var N = 5; &#xD;
 			      }&#xD;
 			&#xD;
 			}&#xD;
-    }&#xD;
+    }*/&#xD;
 &#xD;
 }</script>
       <active>true</active>
     </plugin_config>
     <width>600</width>
-    <z>2</z>
-    <height>700</height>
+    <z>0</z>
+    <height>812</height>
     <location_x>785</location_x>
-    <location_y>112</location_y>
+    <location_y>0</location_y>
   </plugin>
 </simconf>
 

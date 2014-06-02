@@ -1333,7 +1333,7 @@ if (p!=NULL)
 char find_pref(void)
 {
 	int timer;
-
+print("find_pref\n");
 	if (tx_indx == 4)
 	{
 		pt_exist = rpl_pt_parents();
