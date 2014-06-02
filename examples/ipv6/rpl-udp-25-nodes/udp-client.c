@@ -149,6 +149,7 @@ PROCESS_THREAD(udp_client_process, ev, data)
 {
   static struct etimer periodic, startup, TPC;
   static struct ctimer backoff_timer;
+  char x;
   int startup_time;
 #if WITH_COMPOWER
   static int print = 0;
@@ -189,9 +190,9 @@ startup_time=(random_rand()*CLOCK_SECOND)*60/RANDOM_RAND_MAX;
 
   PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
 
-  find_pref();
+  x= find_pref();
 
-  etimer_set(&TPC, CLOCK_SECOND*10);
+  etimer_set(&TPC, CLOCK_SECOND*9*60);
   PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
 
 
