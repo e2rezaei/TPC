@@ -87,13 +87,14 @@ static struct ctimer  stagger_timer;
 static struct ctimer  find_pref_timer;
 static void handle_probe_timer(void *);
 static void handle_stagger_timer(void *);
+static void handle_find_pref_timer(void * ptr);
 static int index;
 
 static int Tx_array[8]={3,7,11,15,19,23,27,31};
 static int Es_array[8]={330,330,330,330,330,330,330,330};
 static int tx;
 static int tx_indx=4;
-static void set_output_power_field(void);
+void set_output_power_field(int);
 static 	char pt_exist=0;
 //static char flag=0;
 //elnaz
@@ -1331,11 +1332,9 @@ if (p!=NULL)
 
 char find_pref(void)
 {
-	 static struct etimer test_one_tx;
-
 	int timer;
 
-	if (tx_index == 4)
+	if (tx_indx == 4)
 	{
 		pt_exist = rpl_pt_parents();
 	}
@@ -1345,7 +1344,7 @@ char find_pref(void)
 		if(pt_exist==1)
 		{
 
-			set_output_power_field(Tx_array[tx_index]);
+			set_output_power_field(Tx_array[tx_indx]);
 
 			timer = (PROBE_INTERVAL * CLOCK_SECOND);
 			ctimer_set(&probe_timer, timer, &handle_probe_timer, pt_parents);
@@ -1470,33 +1469,35 @@ static void handle_probe_timer(void *pt)
 	}
 }
 /*--------------------------------------------------------------------------------*/
-void handle_find_pref_timer(void * ptr)
+static void handle_find_pref_timer(void * ptr)
 {
 
 	rpl_dag_t *dag=(&instance_table[0])->current_dag;
 	rpl_parent_t *pref = dag->preferred_parent  ;
-	int etx = (pref->numtx)/(pref->recv);
-
-	Es[tx_index] = calculate_path_metric(pref);
-if(tx_index==4)
+	int etx;
+if(pref!=NULL){
+	etx =(pref->numtx)/(pref->recv);
+	Es_array[tx_indx] = pref->rank + (dag->Tx * (uint16_t)pref->link_metric);//dag->instance->of->calculate_path_metric(pref);
+if(tx_indx==4)
 {
 	pt_parents[1].rank=INFINITE_RANK;
 	pt_parents[1].ipaddr=NULL;
 	pt_parents[2]=pt_parents[1];
-	pt_parents[0].ipaddr = pl_get_parent_ipaddr(pref);
+	pt_parents[0].ipaddr = rpl_get_parent_ipaddr(pref);
 	pref->numtx=0;
 	pref->recv=0;
 	if (etx==2)
 	{
-		set_output_power_field(Tx_array[tx_index]);
+		set_output_power_field(Tx_array[tx_indx]);
 
 	}
 	else
 	{
 		if(etx==1)
-		{tx_index--;}
+		{tx_indx--;}
 		else
-		{tx_index++;}
+		{tx_indx++;}
+		find_pref();
 	}
 
 }
@@ -1505,19 +1506,21 @@ else{
 	if (etx==2)
 	{
 
-		set_output_power_field(Tx_array[tx_index]);
+		set_output_power_field(Tx_array[tx_indx]);
 	}
 	else
 	{
 		if(etx==1)
-		{tx_index--;
+		{tx_indx--;
 
 		}
 		else
-		{tx_index++;}
+		{tx_indx++;}
 
-		set_output_power_field(Tx_array[tx_index]);
+		set_output_power_field(Tx_array[tx_indx]);
 	}
+
+}//pref!=Null
 
 }
 
@@ -1606,15 +1609,15 @@ temp2 = ((p->rank%256)*100)/256;
 
 }
 /*--------------------------------------------------------------------------------*/
-static void set_output_power_field(int pow)
+void set_output_power_field(int pow)
 {
 
 rpl_dag_t *dag=(&instance_table[0])->current_dag;
 
- tx =cc2420_set_txpower(pow);
+cc2420_set_txpower(pow);
 printf(" Tx=%d \n",pow);
 
-switch(tx) {
+switch(pow) {
 
 case 3:
 	dag->Tx = 1; //0.003;//25.5 * coeff;

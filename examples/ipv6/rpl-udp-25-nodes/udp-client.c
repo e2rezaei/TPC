@@ -191,7 +191,7 @@ startup_time=(random_rand()*CLOCK_SECOND)*60/RANDOM_RAND_MAX;
 
   find_pref();
 
-  etimer_set(&TPC, CLOCK_SECOND*startup_time);
+  etimer_set(&TPC, CLOCK_SECOND*10);
   PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
 
 
