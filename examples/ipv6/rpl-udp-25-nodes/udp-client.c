@@ -27,6 +27,7 @@
  *
  */
 #include "dev/cc2420.h"//elnaz
+#include "net/rpl/rpl-private.h" //elnaz
 #include "contiki.h"
 #include "lib/random.h"
 #include "sys/ctimer.h"
@@ -34,6 +35,7 @@
 #include "net/uip-ds6.h"
 #include "net/uip-udp-packet.h"
 #include "sys/ctimer.h"
+#include "lib/random.h"
 
 #include "powertrace.h"
 
@@ -145,16 +147,17 @@ set_global_address(void)
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(udp_client_process, ev, data)
 {
-  static struct etimer periodic;
+  static struct etimer periodic, startup, TPC;
   static struct ctimer backoff_timer;
+  int startup_time;
 #if WITH_COMPOWER
   static int print = 0;
 #endif
 
   PROCESS_BEGIN();
 powertrace_start(CLOCK_SECOND * 2); //elnaz
-cc2420_set_txpower(31);
-printf(" Tx=%d\n", cc2420_get_txpower());
+//cc2420_set_txpower(31);
+//printf(" Tx=%d\n", cc2420_get_txpower());
   PROCESS_PAUSE();
 
   set_global_address();
@@ -180,6 +183,21 @@ printf(" Tx=%d\n", cc2420_get_txpower());
   powertrace_sniff(POWERTRACE_ON);
 #endif
 
+  //----------------------Set TX {
+startup_time=(random_rand()*CLOCK_SECOND)*60/RANDOM_RAND_MAX;
+  etimer_set(&startup, CLOCK_SECOND*startup_time);
+
+  PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
+
+  find_pref();
+
+  etimer_set(&TPC, CLOCK_SECOND*startup_time);
+  PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
+
+
+
+
+  //----------------------Set TX }
   etimer_set(&periodic, SEND_INTERVAL);
   while(1) {
     PROCESS_YIELD();
