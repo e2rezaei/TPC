@@ -1,0 +1,24 @@
+Folder contiki-2.7-- 
+
+	It is designed to track the node behavior when node 1 is moved. 
+	The collect-view is not working.
+	
+	It produces the text results in the rpl-dag.c and rpl_mrhof.c. Each time that any link's etx is changed, monitor_parents will print each parents status. If pref(ETX)<ETX_TH, then the potential preferred parent and probing algorihtm is activated. After one round of probing if pref(ETX) is still less than ETX_TH, ETX_TH will get updated. 
+
+
+
+
+Features:
+------------
+	parents_monitor
+	potential prents
+	probing
+	Adjusting ETX_TH 
+	Test Script to run the experiment for 1 hour and change node 1 location at t=20 min.
+	
+
+examples:
+---------------
+	
+	rpl-collec-etx: move node 1 at t=30min and monitor-parents(). simulation time=70min
+	rpl-collect-etx-script: log output of motes in different files
